@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  phpfpm:
+    build: .
+    networks:
+      - app-tier
+    volumes:
+      - ./:/app
+      - ./conf.d/custom-php.ini:/opt/bitnami/php/etc/conf.d/custom-php.ini
+      - ./conf.d/xdebug.ini:/opt/bitnami/php/etc/conf.d/xdebug.ini
+    extra_hosts:
+      - "host.docker.internal:192.168.1.2"
+
+  nginx:  
+    image: 'bitnami/nginx:latest'
+    depends_on:
+      - phpfpm
+    networks:
+      - app-tier
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./conf.d/server_blocks.conf:/opt/bitnami/nginx/conf/server_blocks/yourapp.conf
+      - ./conf.d/server_blocks_https.conf:/opt/bitnami/nginx/conf/server_blocks/server_blocks_https.conf
+
+networks:
+  app-tier:
+    driver: bridge
